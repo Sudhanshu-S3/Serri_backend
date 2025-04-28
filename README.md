@@ -5,8 +5,8 @@
 ### YouTube API Integration
 
 - [x] Set up YouTube API client
-- [ ] Create async background service to fetch videos at 10-second intervals
-- [ ] Implement predefined search query configuration
+- [x] Create async background service to fetch videos at 10-second intervals
+- [x] Implement predefined search query configuration
 - [ ] Handle API rate limiting and errors
 - [ ] Testing
 
