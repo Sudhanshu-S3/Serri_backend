@@ -7,7 +7,7 @@
 - [x] Set up YouTube API client
 - [x] Create async background service to fetch videos at 10-second intervals
 - [x] Implement predefined search query configuration
-- [ ] Handle API rate limiting and errors
+- [x] Handle API rate limiting and errors
 - [ ] Testing
 
 ### Database Setup
@@ -19,8 +19,8 @@
 
 ### API Development
 
-- [ ] Create GET API endpoint for paginated video data
-- [ ] Implement sorting by published datetime (descending)
+- [x] Create GET API endpoint for paginated video data
+- [x] Implement sorting by published datetime (descending)
 - [ ] Develop search API for querying by title and description
 - [ ] Add error handling and validation
 - [ ] Testing
@@ -42,7 +42,7 @@
 
 ### Dashboard Development
 
-- [ ] Design frontend dashboard for video browsing
+- [x] Design frontend dashboard for video browsing
 - [ ] Implement filters and sorting options
 - [ ] Connect dashboard to backend APIs
 

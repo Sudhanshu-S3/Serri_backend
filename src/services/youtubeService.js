@@ -1,54 +1,84 @@
 const axios = require('axios');
 const Video = require('../models/videoModel');
-
+const apiKeyManager = require('../utils/apiKeyManager');
 require('dotenv').config();
 
-class YoutubeService {
+class YouTubeService {
     constructor() {
-        this.searchQuery = process.env.SEARCH_QUERY;
-        this.apiKey = process.env.YOUTUBE_API_KEY;
         this.baseUrl = 'https://www.googleapis.com/youtube/v3/search';
-        this.lastFetchTime = new Date(Date,now() - 24 * 60 * 60 * 1000); // 24 hours ago
+        this.searchQuery = process.env.SEARCH_QUERY;
+        this.lastFetchTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // Start with 24 hours ago
     }
 
-    async fetchVideos(query) {
+    async fetchLatestVideos() {
         try {
-            console.log('Fetching videos from YouTube...');
-            const response = await axios.get(`${this.baseUrl}/search`, {
-                params: {
-                    part: 'snippet',
-                    q: query,
-                    type: 'video',
-                    order: 'date',
-                    maxResults: 50,
-                    publishedAfter: this.lastFetchTime.toISOString(),
-                    key: this.apiKey,
-                },
-            });
-            return response.data.items;
+            console.log('Fetching latest videos...');
+            const params = {
+                part: 'snippet',
+                q: this.searchQuery,
+                type: 'video',
+                order: 'date',
+                maxResults: 50,
+                publishedAfter: this.lastFetchTime.toISOString(),
+                key: apiKeyManager.getCurrentKey()
+            };
+
+            const response = await axios.get(this.baseUrl, { params });
+
+            if (response.data.items && response.data.items.length) {
+                await this.saveVideos(response.data.items);
+                this.lastFetchTime = new Date();
+            }
+
+            return { success: true, count: response.data.items?.length || 0 };
         } catch (error) {
-            console.error('Error fetching videos from YouTube API:', error);
-            throw new Error('Failed to fetch videos from YouTube API');
+            console.error('Error fetching videos:', error.message);
+
+            // Handle API quota exhaustion
+            if (error.response && error.response.status === 403 &&
+                error.response.data.error.errors[0].reason === 'quotaExceeded') {
+                apiKeyManager.markKeyAsExhausted(apiKeyManager.getCurrentKey());
+                console.log('API key quota exceeded, switching to next key');
+            }
+
+            return { success: false, error: error.message };
         }
     }
 
     async saveVideos(videos) {
         try {
-            const videoPromises = videos.map(async (video) => {
-                const videoData = {
-                    title: video.snippet.title,
-                    description: video.snippet.description,
-                    thumbnail: video.snippet.thumbnails.default.url,
-                    videoId: video.id.videoId,
-                };
-                return await Video.create(videoData);
-            });
-            await Promise.all(videoPromises);
+            // Check if videos are already in the database
+            const videosToSave = videos.map(item => ({
+                videoId: item.id.videoId,
+                title: item.snippet.title,
+                description: item.snippet.description,
+                publishedAt: new Date(item.snippet.publishedAt),
+                thumbnails: {
+                    default: item.snippet.thumbnails.default,
+                    medium: item.snippet.thumbnails.medium,
+                    high: item.snippet.thumbnails.high
+                },
+                videoUrl: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                channelTitle: item.snippet.channelTitle,
+                channelId: item.snippet.channelId
+            }));
+
+            // Use bulkWrite with upsert to avoid duplicates
+            const operations = videosToSave.map(video => ({
+                updateOne: {
+                    filter: { videoId: video.videoId },
+                    update: { $set: video },
+                    upsert: true
+                }
+            }));
+
+            await Video.bulkWrite(operations);
+            console.log(`${videosToSave.length} videos saved/updated`);
         } catch (error) {
-            console.error('Error saving videos to database:', error);
-            throw new Error('Failed to save videos to database');
+            console.error('Error saving videos:', error);
+            throw error;
         }
     }
 }
 
-module.exports = new YoutubeService();
+module.exports = new YouTubeService();
