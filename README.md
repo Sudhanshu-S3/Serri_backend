@@ -1,53 +1,117 @@
 # SERRI BACKEND ASSIGNMENT
 
-## Core Requirements
+## What This App Does
 
-### YouTube API Integration
+This app collects YouTube videos based on your search terms and shows them in a nice dashboard. It:
 
-- [x] Set up YouTube API client
-- [x] Create async background service to fetch videos at 10-second intervals
-- [x] Implement predefined search query configuration
-- [x] Handle API rate limiting and errors
-- [x] Testing
+- Automatically finds new videos every few seconds
+- Saves videos to a database so you can view them later
+- Lets you search through all saved videos
+- Shows videos in a grid with thumbnails and basic info
 
-### Database Setup
+## Setting Up the App
 
-- [x] Design database schema for video data storage
-- [x] Implement proper indexing for efficient queries
-- [x] Create data models for video information (title, description, datetime, thumbnails)
-- [x] Set up database connection and ORM
+### What You'll Need
 
-### API Development
+- Node.js installed on your computer
+- MongoDB database
+- YouTube API key(s)
 
-- [x] Create GET API endpoint for paginated video data
-- [x] Implement sorting by published datetime (descending)
-- [ ] Develop search API for querying by title and description
-- [x] Add error handling and validation
-- [ ] Testing
+### Setup Steps
 
-### Infrastructure
+1. **Download the project**:
 
-- [ ] Dockerize the application
-- [ ] Create Docker Compose configuration
-- [ ] Write documentation for setup and deployment
-- [ ] Implement scalability optimizations
+   ```
+   git clone https://github.com/Sudhanshu-S3/Serri_backend
+   cd serri
+   ```
 
-## Bonus Tasks (Optional)
+2. **Install dependencies**:
 
-### Enhanced API Key Management
+   ```
+   npm install
+   ```
 
-- [ ] Implement multiple YouTube API key support
-- [ ] Create key rotation logic when limits are reached
-- [ ] Add monitoring for API key usage
+3. **Create a .env file** with these settings:
 
-### Dashboard Development
+   ```
+   PORT=7070
+   MONGODB_URI=your_mongodb_connection_string
+   YOUTUBE_API_KEYS=your_api_key1,your_api_key2
+   SEARCH_QUERY=your search term
+   FETCH_INTERVAL=10000
+   PAGE_SIZE=10
+   ```
 
-- [x] Design frontend dashboard for video browsing
-- [x] Implement filters and sorting options
-- [x] Connect dashboard to backend APIs
+4. **Start the app**:
 
-### Search Optimization
+   ```
+   npm start
+   ```
 
-- [ ] Enhance search algorithm for partial matching
-- [ ] Implement search indexing for performance
-- [ ] Add relevance scoring for search results
+5. **Open in browser**:
+   ```
+   http://localhost:7070
+   ```
+
+## Using Docker
+
+If you have Docker installed:
+
+```
+docker build -t youtube-app .
+docker run -p 12121:12121 -e MONGODB_URI=your_mongodb_uri youtube-app
+```
+
+## Testing the API
+
+You can test the API endpoints using your browser, Postman, or other tools.
+
+### Main API Endpoints
+
+#### 1. Get All Videos
+
+**Request**:
+
+```
+GET http://localhost:7070/api/videos?page=1&sortField=publishedAt&sortOrder=-1
+```
+
+**What it does**: Gets videos with newest first, 10 per page
+
+#### 2. Search Videos
+
+**Request**:
+
+```
+GET http://localhost:7070/api/videos/search?query=your+search+term&page=1
+```
+
+**What it does**: Finds videos matching your search words
+
+#### 3. Get Search Suggestions
+
+**Request**:
+
+```
+GET http://localhost:7070/api/videos/suggestions?query=par
+```
+
+**What it does**: Shows possible search terms as you type
+
+### Testing Tips
+
+- **Change the page number**: Add `?page=2` to see more results
+- **Sort differently**: Add `&sortField=title&sortOrder=1` to sort A-Z
+- **Combine options**: You can use page and sort together
+
+Example: `http://localhost:7070/api/videos?page=2&sortField=title&sortOrder=1`
+
+## Features
+
+- **Dark/Light Theme**: Click the toggle button to switch
+- **Search**: Type keywords to find videos
+- **Sort Options**: Newest, oldest, or alphabetical
+- **Pagination**: Browse through all videos easily
+
+Author Sudhanshu
