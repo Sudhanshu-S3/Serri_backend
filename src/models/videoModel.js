@@ -34,7 +34,7 @@ const videoSchema = new mongoose.Schema({
     channelId: String
 });
 
-// Creating text index for search functionality
+// Create text index for search functionality
 videoSchema.index({
     title: 'text',
     description: 'text'
